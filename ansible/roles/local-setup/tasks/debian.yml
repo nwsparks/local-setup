@@ -1,0 +1,167 @@
+# - name: install powershell repo
+#   apt:
+#     deb: https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
+#     force_apt_get: yes
+
+- name: install universe and kubectl repo
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: no
+  with_items:
+  - deb https://apt.kubernetes.io/ kubernetes-xenial main
+  #- deb http://us.archive.ubuntu.com/ubuntu {{ ansible_distribution_release|lower }} universe
+
+- name: add kubectl gpg key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: install powershell, python and prereqs
+  apt:
+    name:
+      - python3-pip
+      - unzip
+      - vim
+      - git
+     # - powershell
+    state: latest
+    #force_apt_get: yes
+    update_cache: yes
+
+- name: install kubectl
+  apt:
+    name:
+      - kubectl
+    state: latest
+    force_apt_get: yes
+  register: kubectl_install
+
+- name: install ansible, awscli and reqs
+  pip:
+    state: latest
+    name:
+     - ansible
+     - awscli
+     - boto3
+     - botocore
+     - pre-commit
+     - detect-secrets
+
+- name: add :set background=dark to /etc/vimrc
+  blockinfile:
+    block: |
+      :set background=dark
+      :set tabstop=2
+      :set shiftwidth=2
+      :set expandtab
+    dest: /etc/vimrc
+    state: present
+    marker: '" {mark}'
+    create: yes
+
+- name: make download folder
+  file:
+    path: "{{ download_folder }}"
+    state: directory
+
+- name: get helm and terraform
+  get_url:
+    url: "{{ item }}"
+    dest: "{{ download_folder }}"
+  with_items:
+  - "{{ terraform_url }}"
+  - "{{ helm_url }}"
+
+- name: extract terraform
+  unarchive:
+    src: "{{ download_folder }}/{{ terraform_url | basename  }}"
+    dest: /usr/local/bin/
+    mode: ugo+x
+    keep_newer: yes
+    remote_src: true
+
+- name: extract helm
+  unarchive:
+    src: "{{ download_folder }}/{{ helm_url | basename  }}"
+    dest: /usr/local/bin/
+    mode: ugo+x
+    keep_newer: yes
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+    exclude:
+      - LICENSE
+      - README.md
+  register: helm_install
+
+- name: check if helm repo is installed (expect error if first time setup)
+  shell: helm repo list
+  changed_when: false
+  ignore_errors: true
+  register: helm_repo_result
+  become: false
+
+- name: add default helm repo
+  shell: |-
+    helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+    helm repo update
+  when: helm_repo_result is failed
+  become: false
+
+- name: get kubectx and kubens
+  git:
+    repo: https://github.com/ahmetb/kubectx
+    dest: /opt/kubectx
+
+- name: Create links to kubectx and kubens
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  with_items:
+  - {src: /opt/kubectx/kubectx, dest: /usr/local/bin/kubectx}
+  - {src: /opt/kubectx/kubens, dest: /usr/local/bin/kubens}
+
+- block:
+  - name: make folders
+    file:
+      path: "{{ item }}"
+      state: directory
+    with_items:
+    - ~/completion_scripts/
+    - ~/functions
+
+  - name: add functions file
+    copy:
+      src: functions.sh
+      dest: ~/functions/
+
+  - name: generate helm completion script
+    shell: helm completion bash > ~/completion_scripts/helm.sh
+    when: helm_install is changed
+
+  - name: generate kubectl completion script
+    shell: kubectl completion bash > ~/completion_scripts/kubectl.sh
+    when: kubectl_install is changed
+
+  - name: add completion scripts loading to bashrc
+    blockinfile:
+      block: |-
+        complete -C "$(which aws_completer)" aws
+        source ~/completion_scripts/helm.sh
+        source ~/completion_scripts/kubectl.sh
+        source ~/functions/functions.sh
+      path: ~/.bashrc
+
+  - name: check if helm diff is installed
+    shell: helm plugin list | grep diff || true
+    register: diff_installed
+    changed_when: false
+
+  - name: install helm diff
+    shell: helm plugin install https://github.com/databus23/helm-diff --version master
+    when: diff_installed.stdout == ""
+
+  - name: update helm diff
+    shell: helm plugin update diff
+  become: false
