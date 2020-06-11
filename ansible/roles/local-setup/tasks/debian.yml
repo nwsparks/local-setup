@@ -10,23 +10,27 @@
     update_cache: no
   with_items:
   - deb https://apt.kubernetes.io/ kubernetes-xenial main
+  - deb https://deb.nodesource.com/node_12.x {{ ansible_distribution_release }} main
   #- deb http://us.archive.ubuntu.com/ubuntu {{ ansible_distribution_release|lower }} universe
 
-- name: add kubectl gpg key
+- name: add gpg keys
   apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    url: "{{ item }}"
     state: present
+  with_items:
+  - https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+  - https://packages.cloud.google.com/apt/doc/apt-key.gpg
 
-- name: install powershell, python and prereqs
+- name: install apps
   apt:
     name:
       - python3-pip
       - unzip
       - vim
       - git
+      - nodejs
      # - powershell
     state: latest
-    #force_apt_get: yes
     update_cache: yes
 
 - name: install kubectl
