@@ -11,6 +11,7 @@
   with_items:
   - deb https://apt.kubernetes.io/ kubernetes-xenial main
   - deb https://deb.nodesource.com/node_12.x {{ ansible_distribution_release }} main
+  - ppa:git-core/ppa
   #- deb http://us.archive.ubuntu.com/ubuntu {{ ansible_distribution_release|lower }} universe
 
 - name: add gpg keys
