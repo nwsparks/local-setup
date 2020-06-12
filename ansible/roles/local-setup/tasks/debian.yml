@@ -3,6 +3,23 @@
 #     deb: https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
 #     force_apt_get: yes
 
+- name: setup wsl.conf
+  copy:
+    content: |
+      [automount]
+      options = "metadata,umask=22,fmask=11"
+
+      [network]
+      generateResolvConf = false
+    dest: /etc/wsl.conf
+
+- name: setup resolv.conf
+  copy:
+    content: |
+      nameserver 8.8.8.8
+      nameserver 1.1.1.1
+    dest: /etc/resolv.conf
+
 - name: install universe and kubectl repo
   apt_repository:
     repo: "{{ item }}"
@@ -141,13 +158,23 @@
       src: functions.sh
       dest: ~/functions/
 
+  - name: check if kubectl completion script exists
+    stat:
+      path: ~/completion_scripts/kubectl.sh
+    register: kubectl_script
+
+  - name: check if helm completion script exists
+    stat:
+      path: ~/completion_scripts/helm.sh
+    register: helm_script
+
   - name: generate helm completion script
     shell: helm completion bash > ~/completion_scripts/helm.sh
-    when: helm_install is changed
+    when: helm_install is changed or not helm_script.stat.exists
 
   - name: generate kubectl completion script
     shell: kubectl completion bash > ~/completion_scripts/kubectl.sh
-    when: kubectl_install is changed
+    when: kubectl_install is changed or not kubectl_script.stat.exists
 
   - name: add completion scripts loading to bashrc
     blockinfile:
