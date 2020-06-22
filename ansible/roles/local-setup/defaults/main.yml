@@ -1,4 +1,6 @@
 helm_url: https://get.helm.sh/helm-v3.2.3-linux-amd64.tar.gz
 terraform_url: https://releases.hashicorp.com/terraform/0.12.26/terraform_0.12.26_linux_amd64.zip
+tfsec_url: https://github.com/liamg/tfsec/releases/download/v0.21.0/tfsec-linux-amd64
+
 
 download_folder: ~/downloads
