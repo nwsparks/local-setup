@@ -5,6 +5,11 @@
       prompt: Enter sudo pw
       private: yes
 
+  vars:
+    helm_url: https://get.helm.sh/helm-v3.2.3-linux-amd64.tar.gz
+    terraform_url: https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_linux_amd64.zip
+    tfsec_url: https://github.com/liamg/tfsec/releases/tag/v0.23.2
+
   roles:
     - local-setup
   become: yes

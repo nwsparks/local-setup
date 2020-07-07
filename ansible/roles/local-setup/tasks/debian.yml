@@ -69,6 +69,7 @@
      - botocore
      - pre-commit
      - detect-secrets
+     - checkov
 
 - name: add :set background=dark to /etc/vimrc
   blockinfile:
