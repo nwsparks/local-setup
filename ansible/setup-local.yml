@@ -13,4 +13,3 @@
   roles:
     - local-setup
   become: yes
-  #ansible_become_password: "{{ sudo_pw }}"
