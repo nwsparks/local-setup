@@ -13,12 +13,12 @@
       generateResolvConf = false
     dest: /etc/wsl.conf
 
-- name: setup resolv.conf
-  copy:
-    content: |
-      nameserver 8.8.8.8
-      nameserver 1.1.1.1
-    dest: /etc/resolv.conf
+# - name: setup resolv.conf
+#   copy:
+#     content: |
+#       nameserver 8.8.8.8
+#       nameserver 1.1.1.1
+#     dest: /etc/resolv.conf
 
 - name: install universe and kubectl repo
   apt_repository:
@@ -88,27 +88,31 @@
     path: "{{ download_folder }}"
     state: directory
 
-- name: get tfsec
-  get_url:
-    url: "{{ tfsec_url }}"
-    dest: /usr/local/bin/tfsec
-    mode: ugo+x
+# - name: get tfsec
+#   get_url:
+#     url: "{{ tfsec_url }}"
+#     dest: /usr/local/bin/tfsec
+#     mode: ugo+x
 
-- name: get helm and terraform
+- name: get downloads
   get_url:
     url: "{{ item }}"
     dest: "{{ download_folder }}"
   with_items:
   - "{{ terraform_url }}"
   - "{{ helm_url }}"
+  - "{{ tflint_url }}"
 
-- name: extract terraform
+- name: extract terraform and tflint
   unarchive:
-    src: "{{ download_folder }}/{{ terraform_url | basename  }}"
+    src: "{{ download_folder }}/{{ item }}"
     dest: /usr/local/bin/
     mode: ugo+x
     keep_newer: yes
     remote_src: true
+  with_items:
+    - "{{ terraform_url | basename  }}"
+    - "{{ tflint_url | basename  }}"
 
 - name: extract helm
   unarchive:
