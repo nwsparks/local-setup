@@ -62,14 +62,16 @@
 - name: install ansible, awscli and reqs
   pip:
     state: latest
+    extra_args: --trusted-host pypi.org --trusted-host files.pythonhosted.org
     name:
-     - ansible
-     - awscli
-     - boto3
-     - botocore
-     - pre-commit
-     - detect-secrets
-     - checkov
+      - pip
+      - ansible
+      - awscli
+      - boto3
+      - botocore
+      - pre-commit
+      - detect-secrets
+      - checkov
 
 - name: add :set background=dark to /etc/vimrc
   blockinfile:

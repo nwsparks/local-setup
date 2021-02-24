@@ -1,6 +1,6 @@
-helm_url: https://get.helm.sh/helm-v3.3.4-linux-amd64.tar.gz
-terraform_url: https://releases.hashicorp.com/terraform/0.13.3/terraform_0.13.3_linux_amd64.zip
-#tfsec_url: https://github.com/liamg/tfsec/releases/download/v0.21.0/tfsec-linux-amd64
-tflint_url: https://github.com/terraform-linters/tflint/releases/download/v0.20.2/tflint_linux_amd64.zip
+# helm_url: https://get.helm.sh/helm-v3.3.4-linux-amd64.tar.gz
+# terraform_url: https://releases.hashicorp.com/terraform/0.13.3/terraform_0.13.3_linux_amd64.zip
+# #tfsec_url: https://github.com/liamg/tfsec/releases/download/v0.21.0/tfsec-linux-amd64
+# tflint_url: https://github.com/terraform-linters/tflint/releases/download/v0.20.2/tflint_linux_amd64.zip
 
 download_folder: ~/downloads
